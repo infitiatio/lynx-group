@@ -1,0 +1,12 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/LynxGroup.Api/LynxGroup.Api.csproj" />
+    <Project Path="src/LynxGroup.Application/LynxGroup.Application.csproj" />
+    <Project Path="src/LynxGroup.Domain/LynxGroup.Domain.csproj" />
+    <Project Path="src/LynxGroup.Infrastructure/LynxGroup.Infrastructure.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/LynxGroup.BddTests/LynxGroup.BddTests.csproj" />
+    <Project Path="tests/LynxGroup.UnitTests/LynxGroup.UnitTests.csproj" />
+  </Folder>
+</Solution>
