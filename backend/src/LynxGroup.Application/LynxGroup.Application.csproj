@@ -6,4 +6,8 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\LynxGroup.Domain\LynxGroup.Domain.csproj" />
+  </ItemGroup>
+
 </Project>

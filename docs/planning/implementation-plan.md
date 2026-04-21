@@ -99,28 +99,29 @@ Tests are written **inline** with each phase (unit tests + BDD where noted).
 ### Tasks
 
 #### Infrastructure / Configuration
-- [ ] Add `Google.Apis.Auth` NuGet package to `LynxGroup.Infrastructure`
-- [ ] Add JWT bearer NuGet packages: `Microsoft.AspNetCore.Authentication.JwtBearer`
-- [ ] Configure Google OAuth client settings in `appsettings.json` + User Secrets (`Authentication:Google:ClientId`, `Authentication:Google:ClientSecret`)
-- [ ] Configure JWT settings in `appsettings.json` + User Secrets (`Jwt:Issuer`, `Jwt:Audience`, `Jwt:SigningKey`)
+- [x] Add `Google.Apis.Auth` NuGet package to `LynxGroup.Infrastructure` *(pre-installed in Phase 0)*
+- [x] Add `Microsoft.AspNetCore.Authentication.JwtBearer` NuGet package to `LynxGroup.Infrastructure` *(pre-installed in Phase 0)*
+- [x] Configure Google OAuth client settings in `appsettings.json` + User Secrets (`Authentication:Google:ClientId`, `Authentication:Google:ClientSecret`) *(placeholder keys already scaffolded — confirm values via User Secrets before running)*
+- [x] Configure JWT settings in `appsettings.json` + User Secrets (`Jwt:Issuer`, `Jwt:Audience`, `Jwt:SigningKey`) *(placeholder keys already scaffolded — confirm values via User Secrets before running)*
 
 #### Domain
-- [ ] `User` entity: `Id (Guid)`, `GoogleSubject (string)`, `Email (string)`, `DisplayName (string)`, `CreatedAt`, `UpdatedAt`
+- [x] `User` entity: `Id (Guid)`, `GoogleSubject (string)`, `Email (string)`, `DisplayName (string)`, `CreatedAt`, `UpdatedAt`
 
 #### Infrastructure
-- [ ] `UserConfiguration` — EF type configuration for `User`
-- [ ] Add `Users` DbSet to `AppDbContext`; add EF migration for `User` table
-- [ ] `IGoogleTokenValidator` interface in `Application`; `GoogleTokenValidator` implementation in `Infrastructure`
-- [ ] `IJwtService` interface in `Application`; `JwtService` implementation in `Infrastructure` (issues signed JWT with `sub`, `email`, `name` claims)
-- [ ] `IUserRepository` interface in `Application`; EF implementation in `Infrastructure` (upsert by `google_subject`)
+- [x] `UserConfiguration` — EF type configuration for `User`
+- [x] Add `Users` DbSet to `AppDbContext`; add EF migration `AddUserTable`
+- [x] `IGoogleTokenValidator` interface in `Application`; `GoogleTokenValidator` implementation in `Infrastructure` using `GoogleJsonWebSignature.ValidateAsync` — validates `credential` (idToken) from frontend; `ClientId` must match `Authentication:Google:ClientId` config value
+- [x] `IJwtService` interface in `Application`; `JwtService` implementation in `Infrastructure` (issues HS256 signed JWT with `sub`, `email`, `name` claims; expiry from `Jwt:` config)
+- [x] `IUserRepository` interface in `Application`; EF implementation in `Infrastructure` (upsert by `GoogleSubject`: find existing user and update email/name, or insert new)
 
 #### Application
-- [ ] `AuthenticateUserCommand` record + `AuthenticateUserHandler` service: validate Google token → upsert user → issue JWT
+- [x] `AuthenticateUserCommand` record: `{ string IdToken }`; `AuthenticateUserResult` record: `{ string Token, Guid UserId, string Email, string DisplayName }`
+- [x] `AuthenticateUserHandler`: validate Google token via `IGoogleTokenValidator` → upsert user via `IUserRepository` → issue JWT via `IJwtService` → return `AuthenticateUserResult`
 
 #### API
-- [ ] `AuthController` with `POST /api/auth/google-callback` (accepts `{ idToken: string }`, returns `{ token: string, user: { id, email, displayName } }`)
-- [ ] Register JWT bearer middleware; apply `[Authorize]` globally (or via convention); exempt `/api/auth/google-callback`
-- [ ] Register all auth services in DI
+- [x] `AuthController` with `POST /api/auth/google-callback` (accepts `{ idToken: string }`, returns `{ token: string, user: { id, email, displayName } }`); apply `[AllowAnonymous]`
+- [x] Register JWT bearer middleware in `Program.cs`; apply `[Authorize]` globally via convention; exempt `/api/auth/google-callback`
+- [x] Register all auth services in DI (`GoogleTokenValidator`, `JwtService`, `UserRepository`, `AuthenticateUserHandler`)
 
 #### Tests
 - [ ] Unit: `JwtService` — valid claims round-trip, expiry set correctly
@@ -128,16 +129,26 @@ Tests are written **inline** with each phase (unit tests + BDD where noted).
 - [ ] BDD scenario: *"Unauthenticated request to any protected endpoint returns 401"*
 
 #### Frontend
-- [ ] Create auth routes/pages: `LoginPage`, `AuthCallbackPage`
-- [ ] Add Google sign-in entry point and callback flow that sends `idToken` to `POST /api/auth/google-callback`
-- [ ] Implement auth state hook/context with JWT persistence in `localStorage` and current-user data
-- [ ] Add protected-route behavior: unauthenticated users are redirected to `/login`
-- [ ] Handle auth error states (invalid callback token, backend 401/500) with clear retry path
+- [ ] Install `@react-oauth/google` npm package; wrap app root in `GoogleOAuthProvider` using `VITE_GOOGLE_CLIENT_ID` env var
+- [ ] Implement `LoginRoutePage` with `GoogleLogin` component (credential/idToken popup flow — **not** `useGoogleLogin` which returns `access_token`); on success POST `credential` to `POST /api/auth/google-callback`, store returned JWT via `tokenStorage.setToken()`, navigate to `/groups`
+- [ ] Create `useAuth` hook (`frontend/src/shared/auth/useAuth.ts`): exposes `{ isAuthenticated, currentUser, login(idToken), logout() }`; restores session from `localStorage` on mount; clears token and navigates to `/login` on logout
+- [ ] Add `ProtectedRoute` wrapper component; apply to `/groups`, `/groups/:groupId`, `/shared/:shareToken` in `appRouter.tsx`
+- [ ] Handle auth error states on `LoginRoutePage`: backend 401/500 and invalid Google response show clear user-facing error with retry path; handle 401 responses in `httpClient` by clearing token and redirecting to `/login`
 
 #### Frontend Unit Tests
-- [ ] `useAuth` hook: stores token, restores session, clears session on logout
-- [ ] `AuthCallbackPage`: success path persists token and navigates to `/groups`
-- [ ] `AuthCallbackPage`: failure path shows user-facing error and keeps app in unauthenticated state
+- [ ] `useAuth` hook: stores token on login, restores session from localStorage on mount, clears session on logout
+- [ ] `LoginRoutePage`: success path persists token and navigates to `/groups`
+- [ ] `LoginRoutePage`: failure path (backend error) shows user-facing error and keeps app in unauthenticated state
+
+### Acceptance
+
+- `dotnet build` succeeds across all projects
+- `dotnet ef database update` applies `AddUserTable` migration without errors
+- `POST /api/auth/google-callback` with a valid Google idToken returns `{ token, user }` (manual `.http` test)
+- Any protected endpoint without a bearer token returns 401
+- `dotnet test` — unit and BDD tests pass
+- `npm run test` — `useAuth` and `LoginRoutePage` tests pass
+- Manual: Google sign-in → JWT stored in localStorage → protected routes accessible → logout → redirect to `/login`
 
 ---
 
