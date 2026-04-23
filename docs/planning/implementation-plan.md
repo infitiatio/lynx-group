@@ -124,9 +124,9 @@ Tests are written **inline** with each phase (unit tests + BDD where noted).
 - [x] Register all auth services in DI (`GoogleTokenValidator`, `JwtService`, `UserRepository`, `AuthenticateUserHandler`)
 
 #### Tests
-- [ ] Unit: `JwtService` — valid claims round-trip, expiry set correctly
-- [ ] Unit: `AuthenticateUserHandler` — new user created, existing user email updated, invalid token rejected
-- [ ] BDD scenario: *"Unauthenticated request to any protected endpoint returns 401"*
+- [x] Unit: `JwtService` — valid claims round-trip, expiry set correctly
+- [x] Unit: `AuthenticateUserHandler` — new user created, existing user email updated, invalid token rejected
+- [x] BDD scenario: *"Unauthenticated request to any protected endpoint returns 401"*
 
 #### Frontend
 - [ ] Install `@react-oauth/google` npm package; wrap app root in `GoogleOAuthProvider` using `VITE_GOOGLE_CLIENT_ID` env var

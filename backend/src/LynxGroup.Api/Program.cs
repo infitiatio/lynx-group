@@ -4,7 +4,6 @@ using LynxGroup.Infrastructure.Auth;
 using LynxGroup.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
@@ -39,16 +38,14 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         };
     });
 
-// Apply [Authorize] globally — individual endpoints use [AllowAnonymous] to opt out
-builder.Services.AddControllers(options =>
+builder.Services.AddControllers();
+
+builder.Services.AddAuthorization(options =>
 {
-    var policy = new AuthorizationPolicyBuilder()
+    options.FallbackPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
-    options.Filters.Add(new AuthorizeFilter(policy));
 });
-
-builder.Services.AddAuthorization();
 builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<AppDbContext>();
@@ -66,3 +63,5 @@ app.MapControllers();
 app.MapHealthChecks("/health");
 
 app.Run();
+
+public partial class Program;
