@@ -6,6 +6,12 @@ namespace LynxGroup.BddTests.Bindings;
 
 public sealed class TestApiFactory : WebApplicationFactory<Program>
 {
+    public TestApiFactory()
+    {
+        Environment.SetEnvironmentVariable("Authentication__Google__ClientId", "lynxgroup-google-client-id");
+        Environment.SetEnvironmentVariable("Jwt__SigningKey", "lynxgroup-tests-signing-key-1234567890");
+    }
+
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
         builder.UseEnvironment("Development");

@@ -129,16 +129,16 @@ Tests are written **inline** with each phase (unit tests + BDD where noted).
 - [x] BDD scenario: *"Unauthenticated request to any protected endpoint returns 401"*
 
 #### Frontend
-- [ ] Install `@react-oauth/google` npm package; wrap app root in `GoogleOAuthProvider` using `VITE_GOOGLE_CLIENT_ID` env var
-- [ ] Implement `LoginRoutePage` with `GoogleLogin` component (credential/idToken popup flow — **not** `useGoogleLogin` which returns `access_token`); on success POST `credential` to `POST /api/auth/google-callback`, store returned JWT via `tokenStorage.setToken()`, navigate to `/groups`
-- [ ] Create `useAuth` hook (`frontend/src/shared/auth/useAuth.ts`): exposes `{ isAuthenticated, currentUser, login(idToken), logout() }`; restores session from `localStorage` on mount; clears token and navigates to `/login` on logout
-- [ ] Add `ProtectedRoute` wrapper component; apply to `/groups`, `/groups/:groupId`, `/shared/:shareToken` in `appRouter.tsx`
-- [ ] Handle auth error states on `LoginRoutePage`: backend 401/500 and invalid Google response show clear user-facing error with retry path; handle 401 responses in `httpClient` by clearing token and redirecting to `/login`
+- [x] Install `@react-oauth/google` npm package; wrap app root in `GoogleOAuthProvider` using `VITE_GOOGLE_CLIENT_ID` env var
+- [x] Implement `LoginRoutePage` with `GoogleLogin` component (credential/idToken popup flow — **not** `useGoogleLogin` which returns `access_token`); on success POST `credential` to `POST /api/auth/google-callback`, store returned JWT via `tokenStorage.setToken()`, navigate to `/groups`
+- [x] Create `useAuth` hook (`frontend/src/shared/auth/useAuth.ts`): exposes `{ isAuthenticated, currentUser, login(idToken), logout() }`; restores session from `localStorage` on mount; clears token and navigates to `/login` on logout
+- [x] Add `ProtectedRoute` wrapper component; apply to `/groups`, `/groups/:groupId`, `/shared/:shareToken` in `appRouter.tsx`
+- [x] Handle auth error states on `LoginRoutePage`: backend 401/500 and invalid Google response show clear user-facing error with retry path; handle 401 responses in `httpClient` by clearing token and redirecting to `/login`
 
 #### Frontend Unit Tests
-- [ ] `useAuth` hook: stores token on login, restores session from localStorage on mount, clears session on logout
-- [ ] `LoginRoutePage`: success path persists token and navigates to `/groups`
-- [ ] `LoginRoutePage`: failure path (backend error) shows user-facing error and keeps app in unauthenticated state
+- [x] `useAuth` hook: stores token on login, restores session from localStorage on mount, clears session on logout
+- [x] `LoginRoutePage`: success path persists token and navigates to `/groups`
+- [x] `LoginRoutePage`: failure path (backend error) shows user-facing error and keeps app in unauthenticated state
 
 ### Acceptance
 

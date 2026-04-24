@@ -8,8 +8,13 @@ public class GoogleTokenValidator(IConfiguration configuration) : IGoogleTokenVa
 {
     public async Task<GoogleTokenPayload> ValidateAsync(string idToken, CancellationToken ct = default)
     {
-        var clientId = configuration["Authentication:Google:ClientId"]
-            ?? throw new InvalidOperationException("Google ClientId is not configured.");
+        var clientId = configuration["Authentication:Google:ClientId"]?.Trim();
+
+        if (string.IsNullOrWhiteSpace(clientId) || clientId.Contains("CHANGE_ME", StringComparison.OrdinalIgnoreCase))
+        {
+            throw new InvalidOperationException(
+                "Authentication:Google:ClientId is not configured. Set it via .NET user-secrets or environment variables before using Google sign-in.");
+        }
 
         var settings = new GoogleJsonWebSignature.ValidationSettings
         {
