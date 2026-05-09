@@ -120,6 +120,7 @@ Tests are written **inline** with each phase (unit tests + BDD where noted).
 
 #### API
 - [x] `AuthController` with `POST /api/auth/google-callback` (accepts `{ idToken: string }`, returns `{ token: string, user: { id, email, displayName } }`); apply `[AllowAnonymous]`
+- [x] Configure API CORS for the frontend origin used by the SPA during local development and manual auth testing
 - [x] Register JWT bearer middleware in `Program.cs`; apply `[Authorize]` globally via convention; exempt `/api/auth/google-callback`
 - [x] Register all auth services in DI (`GoogleTokenValidator`, `JwtService`, `UserRepository`, `AuthenticateUserHandler`)
 

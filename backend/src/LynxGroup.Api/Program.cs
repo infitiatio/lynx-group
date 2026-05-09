@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
+const string FrontendCorsPolicy = "Frontend";
 
 static string RequireConfiguredSetting(IConfiguration configuration, string key)
 {
@@ -24,6 +25,34 @@ static string RequireConfiguredSetting(IConfiguration configuration, string key)
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+var allowedOrigins = builder.Configuration
+    .GetSection("Cors:AllowedOrigins")
+    .Get<string[]>()?
+    .Where(origin => !string.IsNullOrWhiteSpace(origin))
+    .Select(origin => origin.Trim())
+    .Distinct(StringComparer.OrdinalIgnoreCase)
+    .ToArray();
+
+if (allowedOrigins is null or { Length: 0 } && builder.Environment.IsDevelopment())
+{
+    allowedOrigins = ["http://localhost:5173"];
+}
+
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy(FrontendCorsPolicy, policy =>
+    {
+        if (allowedOrigins is not { Length: > 0 })
+        {
+            return;
+        }
+
+        policy.WithOrigins(allowedOrigins)
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
 
 // Auth services
 builder.Services.AddScoped<IGoogleTokenValidator, GoogleTokenValidator>();
@@ -64,9 +93,20 @@ builder.Services.AddHealthChecks()
 
 var app = builder.Build();
 
+if (app.Environment.IsDevelopment())
+{
+    using var scope = app.Services.CreateScope();
+    var dbContext = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+    dbContext.Database.Migrate();
+}
+
 app.UseExceptionHandler();
 app.UseStatusCodePages();
-app.UseHttpsRedirection();
+if (!app.Environment.IsDevelopment())
+{
+    app.UseHttpsRedirection();
+}
+app.UseCors(FrontendCorsPolicy);
 
 app.UseAuthentication();
 app.UseAuthorization();
