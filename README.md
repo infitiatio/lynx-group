@@ -15,6 +15,23 @@ This repository is in active phased implementation.
 - `frontend/`: React 19 + TypeScript 6 + Vite 8 SPA
 - `docs/`: requirements, architecture, reviews, and implementation plan
 
+## Local auth setup
+
+Google sign-in requires matching frontend and backend configuration before either app is started.
+
+1. Create `frontend/.env.local` from `frontend/.env.example` and set:
+	- `VITE_API_BASE_URL=http://localhost:5134`
+	- `VITE_GOOGLE_CLIENT_ID=<your-google-oauth-web-client-id>.apps.googleusercontent.com`
+2. Configure backend user secrets for the API project:
+	- `dotnet user-secrets --project backend/src/LynxGroup.Api/LynxGroup.Api.csproj set "Authentication:Google:ClientId" "<your-google-oauth-web-client-id>.apps.googleusercontent.com"`
+	- `dotnet user-secrets --project backend/src/LynxGroup.Api/LynxGroup.Api.csproj set "Jwt:SigningKey" "<a-long-random-secret-at-least-32-characters>"`
+3. In Google Cloud Console, open the same OAuth web client and add `http://localhost:5173` under Authorized JavaScript origins.
+4. Use the same Google OAuth web client id in both places.
+
+The API now allows `http://localhost:5173` by default in development. If you run the frontend from a different origin, add that origin under `Cors:AllowedOrigins` for the API as well.
+
+If `VITE_GOOGLE_CLIENT_ID` is missing, the frontend now fails immediately with a setup error instead of redirecting to Google's `Missing required parameter: client_id` page.
+
 ## Run locally
 
 1. Backend API

@@ -67,6 +67,10 @@ export async function requestAsync<T>(path: string, options: RequestOptions = {}
     const payload = isJson ? await response.json() : undefined
 
     if (!response.ok) {
+      if (response.status === 401) {
+        tokenStorage.clearToken()
+        window.location.href = '/login'
+      }
       return {
         ok: false,
         status: response.status,

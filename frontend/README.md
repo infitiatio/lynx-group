@@ -16,6 +16,17 @@ Copy `.env.example` to `.env.local` and configure:
 - `VITE_API_BASE_URL` (backend API base URL)
 - `VITE_GOOGLE_CLIENT_ID` (Google OAuth client id)
 
+Example `.env.local`:
+
+```dotenv
+VITE_API_BASE_URL=http://localhost:5134
+VITE_GOOGLE_CLIENT_ID=your-google-client-id.apps.googleusercontent.com
+```
+
+The Google OAuth web client id must match the backend value configured under `Authentication:Google:ClientId`. If it is missing, the app now throws a startup error instead of opening Google's `Missing required parameter: client_id` page.
+
+For local popup sign-in to work, add `http://localhost:5173` to Authorized JavaScript origins for that Google OAuth web client. The backend also needs that frontend origin listed under `Cors:AllowedOrigins`.
+
 ## Current Frontend Baseline
 
 - Feature/module folders scaffolded under `src/features`, `src/shared`, and `src/routes`
