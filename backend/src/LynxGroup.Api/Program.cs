@@ -1,5 +1,7 @@
 using System.Text;
 using LynxGroup.Application.Auth;
+using LynxGroup.Application.Groups;
+using LynxGroup.Api.Authorization;
 using LynxGroup.Infrastructure.Auth;
 using LynxGroup.Infrastructure.Persistence;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -60,6 +62,14 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<AuthenticateUserHandler>();
 
+// Group services
+builder.Services.AddScoped<IGroupRepository, GroupRepository>();
+builder.Services.AddScoped<CreateGroupHandler>();
+builder.Services.AddScoped<GetGroupHandler>();
+builder.Services.AddScoped<GetMyGroupsHandler>();
+builder.Services.AddScoped<UpdateGroupHandler>();
+builder.Services.AddScoped<IAuthorizationHandler, IsGroupOwnerHandler>();
+
 // JWT bearer authentication
 var signingKey = RequireConfiguredSetting(builder.Configuration, "Jwt:SigningKey");
 
@@ -86,6 +96,9 @@ builder.Services.AddAuthorization(options =>
     options.FallbackPolicy = new AuthorizationPolicyBuilder()
         .RequireAuthenticatedUser()
         .Build();
+
+    options.AddPolicy("IsGroupOwner", policy =>
+        policy.AddRequirements(new IsGroupOwnerRequirement()));
 });
 builder.Services.AddProblemDetails();
 builder.Services.AddHealthChecks()
