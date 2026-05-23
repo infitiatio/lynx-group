@@ -1,6 +1,7 @@
 import { createBrowserRouter, Navigate, type RouteObject } from 'react-router-dom'
 import App from '../App'
 import { ProtectedRoute } from '../shared/components/ProtectedRoute'
+import { GroupCreateRoutePage } from './GroupCreateRoutePage'
 import { GroupDetailRoutePage } from './GroupDetailRoutePage'
 import { GroupsRoutePage } from './GroupsRoutePage'
 import { LoginRoutePage } from './LoginRoutePage'
@@ -18,6 +19,7 @@ export const appRoutes: RouteObject[] = [
         element: <ProtectedRoute />,
         children: [
           { path: 'groups', element: <GroupsRoutePage /> },
+          { path: 'groups/new', element: <GroupCreateRoutePage /> },
           { path: 'groups/:groupId', element: <GroupDetailRoutePage /> },
           { path: 'shared/:shareToken', element: <SharedRoutePage /> },
         ],

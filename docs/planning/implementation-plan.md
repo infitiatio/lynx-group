@@ -155,50 +155,63 @@ Tests are written **inline** with each phase (unit tests + BDD where noted).
 
 ## Phase 2 — Group Module
 
-**Responsible agent(s):** CSharp Developing Code · CSharp Testing (Unit)
+**Responsible agent(s):** CSharp Developing Code · CSharp Testing (Unit) · React Developing Code · React Testing (Unit)
 
 **Architecture reference:** section 4 (Group Module), section 5 (Authorization Model)
+
+**Implementation guide:** [phase-2-implementation.md](phase-2-implementation.md) (detailed step-by-step with code patterns and verification checklist)
+
+**Clarified contract decisions** (locked 2026-05-12):
+- `GET /api/groups/{groupId}` is readable by **any authenticated user** (not owner-only access)
+- `PUT /api/groups/{groupId}` accepts full `GroupDto` in request body (includes all fields; minimal UpdateGroupRequest on frontend)
+- `GET /api/groups` returns simple unordered list (no pagination/sorting in Phase 2)
+- Group delete is out of scope for Phase 2; deferred to later phase
 
 ### Tasks
 
 #### Domain
-- [ ] `Group` entity: `Id (Guid)`, `OwnerUserId (Guid)`, `Title (string)`, `Description (string)`, `IsPublished (bool)`, `ShareToken (string?)`, `CreatedAt`, `UpdatedAt`
+- [x] `Group` entity: `Id (Guid)`, `OwnerUserId (Guid)`, `Title (string)`, `Description (string)`, `IsPublished (bool)`, `ShareToken (string?)`, `CreatedAt`, `UpdatedAt`
 
 #### Infrastructure
-- [ ] `GroupConfiguration` — EF type configuration; index on `ShareToken`
-- [ ] Add `Groups` DbSet to `AppDbContext`; add EF migration
-- [ ] `IGroupRepository` interface in `Application`; EF implementation
+- [x] `GroupConfiguration` — EF type configuration; index on `ShareToken`
+- [x] Add `Groups` DbSet to `AppDbContext`; add EF migration
+- [x] `IGroupRepository` interface in `Application`; EF implementation
 
 #### Application
-- [ ] `CreateGroupCommand` + handler: validate title + description required; return created `GroupDto`
-- [ ] `GetGroupQuery` + handler: fetch by id; verify caller is owner (ownership returned in DTO)
-- [ ] `GetMyGroupsQuery` + handler: return caller's groups
-- [ ] `UpdateGroupCommand` + handler: owner-only; update title/description
-- [ ] `GroupDto` record
+- [x] `CreateGroupCommand` + handler: validate title + description required; return created `GroupDto`
+- [x] `GetGroupQuery` + handler: fetch by id; **readable by any authenticated user** (ownership flag returned in DTO for UI state)
+- [x] `GetMyGroupsQuery` + handler: return caller's groups only
+- [x] `UpdateGroupCommand` + handler: owner-only; update title and description
+- [x] `GroupDto` record: includes `IsOwner` computed flag
 
 #### API
-- [ ] `IsGroupOwner` authorization policy handler: reads `groupId` from route; compares `owner_user_id` with `sub` claim; returns 403 on mismatch
-- [ ] `GroupsController`:
-  - `POST /api/groups` → 201
-  - `GET /api/groups` → 200 (caller's groups)
-  - `GET /api/groups/{groupId}` → 200 or 404
-  - `PUT /api/groups/{groupId}` → 200 (owner only, `[Authorize(Policy = "IsGroupOwner")]`)
-- [ ] Register group services in DI
+- [x] `IsGroupOwner` authorization policy handler: reads `groupId` from route; compares `owner_user_id` with `sub` claim; returns 403 on mismatch
+- [x] `GroupsController`:
+  - `POST /api/groups` → 201 with Location header
+  - `GET /api/groups` → 200 (caller's groups, unordered list, no pagination)
+  - `GET /api/groups/{groupId}` → 200 or 404 (readable by any authenticated user)
+  - `PUT /api/groups/{groupId}` → 200 (owner only; accepts full `GroupDto` request body; `[Authorize(Policy = "IsGroupOwner")]`)
+- [x] Register group services and `IsGroupOwner` policy in DI
 
 #### Tests
-- [ ] Unit: `CreateGroupCommand` — missing title returns validation error, missing description returns validation error, valid input returns created group
-- [ ] Unit: `IsGroupOwner` policy — owner passes, non-owner returns 403, unauthenticated returns 401
+- [x] Unit: `CreateGroupCommand` — missing title returns validation error, missing description returns validation error, valid input returns created group
+- [x] Unit: `IsGroupOwner` policy — owner passes, non-owner returns 403, unauthenticated returns 401
 
 #### Frontend
-- [ ] Build `MyGroupsPage`: list caller groups from `GET /api/groups`, include loading/empty/error states
-- [ ] Build create-group flow using `POST /api/groups` with required title/description validation
-- [ ] Build `GroupDetailPage` using `GET /api/groups/{groupId}` and update flow with `PUT /api/groups/{groupId}`
-- [ ] Enforce owner-only edit actions in UI while preserving read-only rendering for non-owners
+- [x] Build `MyGroupsPage`: list caller groups from `GET /api/groups`, include loading/empty/error states
+- [x] Build create-group flow using `POST /api/groups` with required title/description validation
+- [x] Build `GroupDetailPage` using `GET /api/groups/{groupId}` and update flow with `PUT /api/groups/{groupId}`
+- [x] Enforce owner-only edit actions in UI while preserving read-only rendering for non-owners
 
 #### Frontend Unit Tests
-- [ ] `MyGroupsPage`: renders loading, empty, success, and API error states
-- [ ] Group create/edit form: required field validation and submit behavior
-- [ ] `GroupDetailPage`: owner sees edit controls; non-owner receives read-only UI state
+- [x] `MyGroupsPage`: renders loading, empty, success, and API error states
+- [x] Group create/edit form: required field validation and submit behavior
+- [x] `GroupDetailPage`: owner sees edit controls; non-owner receives read-only UI state
+
+#### Progress Notes
+- [x] 2026-05-22: Backend Group implementation for Phase 2 Infrastructure/Application/API completed and solution rebuild confirmed successful by user (no errors).
+- [x] 2026-05-22: Frontend Group UI flow implemented: list/create/detail pages, typed hooks, reusable form/list components, and route ordering updated for `/groups/new`.
+- [x] 2026-05-23: Phase 2 verification closure completed: `dotnet build`, `dotnet test`, `npm run lint`, `npm run build`, and `npm run test` all passed.
 
 ---
 

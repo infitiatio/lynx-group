@@ -20,6 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\..\src\LynxGroup.Api\LynxGroup.Api.csproj" />
     <ProjectReference Include="..\..\src\LynxGroup.Application\LynxGroup.Application.csproj" />
     <ProjectReference Include="..\..\src\LynxGroup.Domain\LynxGroup.Domain.csproj" />
     <ProjectReference Include="..\..\src\LynxGroup.Infrastructure\LynxGroup.Infrastructure.csproj" />
